@@ -55,17 +55,31 @@ list(
     name = data,
     command = iris
   ),
+  tar_target(name = histogram, 
+             command = plot_histogram(data)),
   tar_target(
-    name = filtered_data,
-    command = data %>% filter(Species == "setosa")
+    name = train_test_data,
+    command = split_train_test_data(data)
   ),
   tar_target(
-    name = summary_stats,
-    command = filtered_data %>% summarize(mean_Sepal.Length = mean(Sepal.Length))
-    ),
+    name = fitted_model,
+    command = build_and_fit_model(train_test_data[[1]])
+  ),
   tar_target(
-    name = plot,
-    command = ggplot(filtered_data, aes(x = Sepal.Length)) + geom_histogram()
-  )
+    name = predicted_data,
+    command = predict_model_fit(fitted_model, train_test_data[[2]])
+  ),
+  tar_target(
+    name = evaluation_metrics,
+    command = model_eval_metrics(predicted_data))
+  # 
+  # tar_target(
+  #   name = summary_stats,
+  #   command = filtered_data %>% summarize(mean_Sepal.Length = mean(Sepal.Length))
+  #   ),
+  # tar_target(
+  #   name = plot,
+  #   command = ggplot(filtered_data, aes(x = Sepal.Length)) + geom_histogram()
+  # )
   
   )

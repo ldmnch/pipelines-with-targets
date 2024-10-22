@@ -97,10 +97,20 @@ You can access the results of any target using `tar_read()`.
 
 ```{r}
 # Read the summary statistics
-tar_read(summary_stats)
+tar_read(evaluation_metrics)
 
 # View the plot
-tar_read(plot)
+tar_read(histogram)
+
+as_tibble(tar_read(evaluation_metrics)$conf_matrix$table) %>%
+  ggplot(aes(x = Prediction, y = Truth, fill = n)) +
+  geom_tile() +
+  geom_text(aes(label = n), color = "white", size = 5) +
+  scale_fill_gradient(low = "lightblue", high = "darkblue") +
+  labs(title = "Confusion Matrix", x = "Predicted", y = "Actual") +
+  theme_minimal()
+
+
 ```
 
 <br>
