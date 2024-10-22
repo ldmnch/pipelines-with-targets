@@ -46,12 +46,11 @@ Pipelines help automate workflows by caching intermediate steps and only rerunni
 
 ```{r}
 # Install targets if not already installed
-if (!require("targets")) {
-  install.packages("targets")
-}
 library(targets)
-library(dplyr)
+library(tidyverse)
 library(ggplot2)
+
+tar_option_set(packages = c("dplyr", "ggplot2"))
 ```
 
 <br>
@@ -67,14 +66,15 @@ We'll create a simple pipeline to read the `iris` dataset, filter it for one spe
 </div>
 
 ```{r}
-tar_script({
-  tar_pipeline(
-    tar_target(raw_data, iris),
-    tar_target(setosa_data, raw_data %>% filter(Species == "setosa")),
-    tar_target(summary_stats, setosa_data %>% summarize(mean_Sepal.Length = mean(Sepal.Length))),
-    tar_target(plot, ggplot(setosa_data, aes(x = Sepal.Length)) + geom_histogram())
-  )
-})
+use_targets()
+# tar_script({
+#   tar_pipeline(
+#     tar_target(raw_data, iris),
+#     tar_target(setosa_data, raw_data %>% filter(Species == "setosa")),
+#     tar_target(summary_stats, setosa_data %>% summarize(mean_Sepal.Length = mean(Sepal.Length))),
+#     tar_target(plot, ggplot(setosa_data, aes(x = Sepal.Length)) + geom_histogram())
+#   )
+# })
 ```
 
 <br>
@@ -88,8 +88,6 @@ Once your pipeline is defined in `_targets.R`, you can run it using the followin
 ```{r}
 tar_make()
 ```
-
-<br>
 
 ------------------------------------------------------------------------
 
@@ -113,9 +111,7 @@ tar_read(plot)
 
 Let's compare how the workflow looks with and without using the `targets` package.
 
-<div class="comment">
 ### Without `targets`:
-</div>
 
 ```{r}
 # Load and clean data
@@ -133,23 +129,6 @@ summary_stats
 plot
 ```
 
-<div class="comment">
-### With `targets`:
-</div>
-
-```{r}
-# Run the pipeline
-tar_make()
-
-# View results
-tar_read(summary_stats)
-tar_read(plot)
-```
-
-<br>
-
-------------------------------------------------------------------------
-
 ## Visualizing the Pipeline
 
 You can visualize the dependency graph of your pipeline with `tar_visnetwork()`.
@@ -158,7 +137,6 @@ You can visualize the dependency graph of your pipeline with `tar_visnetwork()`.
 tar_visnetwork()
 ```
 
-<br>
 
 ------------------------------------------------------------------------
 

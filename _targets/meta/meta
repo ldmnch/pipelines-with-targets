@@ -1,0 +1,8 @@
+name|type|data|command|depend|seed|path|time|size|bytes|format|repository|iteration|parent|children|seconds|warnings|error
+data|stem|2fc1a0ba2c3d8a8a|b6a7d009d774ea48|2c530c1562a7fbd1|33550471||t20018.6271233339s|9d0d21ea3386f962|1092|rds|local|vector|||0||
+filtered_data|stem|b7cc9ac346aa55eb|fe734151e9d7e21e|40f76ef3b3187ce5|1185767870||t20018.6271238113s|7c27fc55be8b6b4d|536|rds|local|vector|||0.02||
+model|stem|1c89d713dc3ed71a|693e4c90d947b5eb|c227b40fd53278fb|808688450||t20018.6244858723s|809d88ef48c68ced|108|rds|local|vector|||0.02||
+plot|stem|a1427834aa210c33|a61a80d8ef916adf|2ae6339cdc4fe0e3|874984291||t20018.6370494141s|1723a06850fa0df5|47233|rds|local|vector|||0.04||
+raw_data|stem|2fc1a0ba2c3d8a8a|b6a7d009d774ea48|2c530c1562a7fbd1|-1101284392||t20018.6155958423s|9d0d21ea3386f962|1092|rds|local|vector|||0||
+setosa_data|stem|b7cc9ac346aa55eb|9c342b590b7b7a3a|e8be6b3953dd3f82|1764480200||t20018.6234215729s|7c27fc55be8b6b4d|536|rds|local|vector|||0.02||
+summary_stats|stem|58fd9dd7b3921e98|95e72e36dc542f73|2ae6339cdc4fe0e3|154554184||t20018.6370487863s|c53c8dfbbcdc4d53|138|rds|local|vector|||0.02||
