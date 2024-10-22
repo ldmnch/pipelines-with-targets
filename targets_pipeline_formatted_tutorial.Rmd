@@ -1,0 +1,167 @@
+
+---
+title: "Establishing Pipelines with targets in R"
+author: "Group E"
+date: "`r format(Sys.time(), '%B %d, %Y | %H:%M:%S | %Z')`"
+output:
+  html_document:
+    code_folding: show
+    df_print: paged
+    highlight: tango
+    number_sections: no
+    theme: cosmo
+    toc: no
+---
+
+<style>
+div.answer {background-color:#f3f0ff; border-radius: 5px; padding: 20px;}
+div.comment {background-color:#F0F6FF; border-radius: 5px; padding: 20px;}
+</style>
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      eval = TRUE,
+                      error = FALSE,
+                      message = FALSE,
+                      warning = FALSE,
+                      comment = NA)
+
+"#f3f0ff"
+```
+
+<br>
+
+------------------------------------------------------------------------
+
+## Introduction
+
+This document will walk you through establishing reproducible workflows using the `targets` package in R.
+You will learn how to create a pipeline to manage data processing efficiently and compare the outcomes with and without `targets`. 
+We will use the built-in `iris` dataset to demonstrate these workflows.
+
+<div class="comment">
+### Why Use Pipelines?
+Pipelines help automate workflows by caching intermediate steps and only rerunning parts of the analysis that have changed.
+</div>
+
+```{r}
+# Install targets if not already installed
+if (!require("targets")) {
+  install.packages("targets")
+}
+library(targets)
+library(dplyr)
+library(ggplot2)
+```
+
+<br>
+
+------------------------------------------------------------------------
+
+## Defining a Simple Pipeline
+
+We'll create a simple pipeline to read the `iris` dataset, filter it for one species (`setosa`), calculate summary statistics, and generate a plot.
+
+<div class="comment">
+### Pipeline Setup (`_targets.R`)
+</div>
+
+```{r}
+tar_script({
+  tar_pipeline(
+    tar_target(raw_data, iris),
+    tar_target(setosa_data, raw_data %>% filter(Species == "setosa")),
+    tar_target(summary_stats, setosa_data %>% summarize(mean_Sepal.Length = mean(Sepal.Length))),
+    tar_target(plot, ggplot(setosa_data, aes(x = Sepal.Length)) + geom_histogram())
+  )
+})
+```
+
+<br>
+
+------------------------------------------------------------------------
+
+## Running the Pipeline
+
+Once your pipeline is defined in `_targets.R`, you can run it using the following command:
+
+```{r}
+tar_make()
+```
+
+<br>
+
+------------------------------------------------------------------------
+
+## Viewing Results
+
+You can access the results of any target using `tar_read()`.
+
+```{r}
+# Read the summary statistics
+tar_read(summary_stats)
+
+# View the plot
+tar_read(plot)
+```
+
+<br>
+
+------------------------------------------------------------------------
+
+## Comparing Outcomes: With and Without `targets`
+
+Let's compare how the workflow looks with and without using the `targets` package.
+
+<div class="comment">
+### Without `targets`:
+</div>
+
+```{r}
+# Load and clean data
+raw_data <- iris
+setosa_data <- raw_data %>% filter(Species == "setosa")
+
+# Calculate summary stats
+summary_stats <- setosa_data %>% summarize(mean_Sepal.Length = mean(Sepal.Length))
+
+# Generate plot
+plot <- ggplot(setosa_data, aes(x = Sepal.Length)) + geom_histogram()
+
+# View results
+summary_stats
+plot
+```
+
+<div class="comment">
+### With `targets`:
+</div>
+
+```{r}
+# Run the pipeline
+tar_make()
+
+# View results
+tar_read(summary_stats)
+tar_read(plot)
+```
+
+<br>
+
+------------------------------------------------------------------------
+
+## Visualizing the Pipeline
+
+You can visualize the dependency graph of your pipeline with `tar_visnetwork()`.
+
+```{r}
+tar_visnetwork()
+```
+
+<br>
+
+------------------------------------------------------------------------
+
+## Conclusion
+
+In this tutorial, we created a simple reproducible workflow using the `targets` package in R. By using `targets`, you can automate and manage complex analyses, improving both efficiency and reproducibility.
