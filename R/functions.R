@@ -1,7 +1,3 @@
-library(tidymodels)
-library(tidyverse)
-library(discrim)
-
 summary_statistics <- function(data){
   summary_data <- data %>%
     group_by(Species) %>%

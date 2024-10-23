@@ -6,7 +6,7 @@ output:
   toc: TRUE
   toc_float: TRUE
   highlight: tango
-author: "Group E"
+author: "Group E: Laia Domenech Burin, Hanna Fantahun Getachew and Chloe Fung"
 date: "`r format(Sys.time(), '%B %d, %Y | %H:%M:%S | %Z')`"
 ---
 
@@ -33,20 +33,19 @@ library(ggplot2)
 
 ```
 
-
 ## Introduction
 
-This document provides a step-by-step guide to establishing reproducible workflows using the `targets` package in R. By following this tutorial, you'll learn how to efficiently manage data processing with pipelines and compare the outcomes of analyses conducted with and without targets.
+This document provides a step-by-step guide to **establishing reproducible workflows** using the `targets` package in R. By following this tutorial, you'll learn how to efficiently manage data processing with **pipelines** and compare the outcomes of analyses conducted with and without targets.
 
 We will use the built-in `iris` dataset as a demonstration.
 
 ### Why Use Pipelines?
 
-Pipelines allow you to automate your workflow by caching intermediate results and rerunning only the parts of the analysis that have changed. This makes your workflow more efficient, reproducible, and scalable.
+Pipelines enable **workflow automation** by caching intermediate results and selectively rerunning only the modified parts of your analysis. This approach enhances **efficiency**, **reproducibility**, and **scalability**, ensuring a smoother and more streamlined process.
 
 ## Defining a Simple Pipeline
 
-We'll create a pipeline to explore the variables of the `iris` dataset, and create a classification model that predicts the species based on all the other variables.
+We'll create a pipeline to *explore* the variables of the `iris` dataset, and create a *classification* *model* that predicts the species based on all the other variables.
 
 ### Pipeline Setup (`_targets.R`)
 
@@ -156,12 +155,13 @@ How did the model perform? Let's check the evaluation metrics.
 tar_read(evaluation_metrics)
 ```
 
-Note that this target contains two outputs! The confusion matrix and overall metrics of accuracy and KAP. We can select items of any target subsetting by index. 
+Note that this target contains two outputs! The confusion matrix and overall metrics of accuracy and KAP. We can select items of any target subsetting by index.
 
 ```{r}
 tar_read(evaluation_metrics)[[2]]
 ```
-We could even perform operations of code on our targets without adding them to the pipeline by selecting them. For example, if we wanted to format our confusion matrix as a plot we could do the following. 
+
+We could even perform operations of code on our targets without adding them to the pipeline by selecting them. For example, if we wanted to format our confusion matrix as a plot we could do the following.
 
 You can access the results of any target using `tar_read()`.
 
@@ -176,8 +176,8 @@ as_tibble(tar_read(evaluation_metrics)[[2]]$table) %>%
 
 
 ```
-This revised version improves readability, adds clarity, and ensures a smooth flow throughout the document. It also emphasizes key steps, making it easier to follow for someone new to using the `targets` package.
 
+This revised version improves readability, adds clarity, and ensures a smooth flow throughout the document. It also emphasizes key steps, making it easier to follow for someone new to using the `targets` package.
 
 ## Comparing Outcomes: With and Without `targets`
 
@@ -186,7 +186,6 @@ Let's compare how the workflow looks with and without using the `targets` packag
 ### Without `targets`:
 
 When operating without the `targets` package, we typically execute all steps sequentially in a more linear fashion. Below is an example of how we would do our previous `iris` pipeline:
-
 
 ```{r}
 data <- iris
@@ -235,9 +234,9 @@ conf_mat <- model_predictions %>%
 
 ```
 
-- This approach requires executing each step in sequence, making it harder to manage intermediate results. As a result, any changes in the analysis (e.g., modifying the model or data processing steps) necessitate re-running the entire workflow.
+-   This approach requires executing each step in sequence, making it harder to manage intermediate results. As a result, any changes in the analysis (e.g., modifying the model or data processing steps) necessitate re-running the entire workflow.
 
-- Without `targets`, it’s easy to lose track of which analyses have been executed or to overlook necessary updates to intermediate steps. This can lead to inconsistencies and longer execution times.
+-   Without `targets`, it's easy to lose track of which analyses have been executed or to overlook necessary updates to intermediate steps. This can lead to inconsistencies and longer execution times.
 
 In contrast, using the `targets` package allows us to modularize our workflow, cache results, and focus only on the components that have changed, significantly enhancing efficiency and reproducibility.
 
@@ -248,4 +247,3 @@ We demonstrated how to define a simple pipeline utilizing the `iris` dataset, en
 Using `tar_make()`, we were able to execute our pipeline, ensuring that computations were only performed when necessary. Furthermore, by leveraging functions like `tar_read()` and `tar_visnetwork()`, we accessed our results easily and visualized the dependencies within our workflow, aiding in better understanding and communication of our analysis.
 
 In summary, the `targets` package equips us with powerful tools to build scalable, reproducible data workflows in R, making it an invaluable asset for data scientists and analysts. We encourage you to experiment with your own datasets and analyses, utilizing these concepts to foster reproducibility and efficiency in your work.
-
