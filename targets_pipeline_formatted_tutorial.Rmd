@@ -1,24 +1,16 @@
-
 ---
-title: "Establishing Pipelines with targets in R"
+title: "Establishing Pipelines With Targets"
+subtitle: "Reproducible and Efficient Workflows in R"
+output: 
+  rmdformats::robobook:
+  toc: TRUE
+  toc_float: TRUE
+  highlight: tango
 author: "Group E"
 date: "`r format(Sys.time(), '%B %d, %Y | %H:%M:%S | %Z')`"
-output:
-  html_document:
-    code_folding: show
-    df_print: paged
-    highlight: tango
-    number_sections: no
-    theme: cosmo
-    toc: no
 ---
 
-<style>
-div.answer {background-color:#f3f0ff; border-radius: 5px; padding: 20px;}
-div.comment {background-color:#F0F6FF; border-radius: 5px; padding: 20px;}
-</style>
-
-```{r, include=FALSE}
+```{r include=FALSE}
 knitr::opts_chunk$set(echo = TRUE,
                       eval = TRUE,
                       error = FALSE,
@@ -26,83 +18,155 @@ knitr::opts_chunk$set(echo = TRUE,
                       warning = FALSE,
                       comment = NA)
 
-"#f3f0ff"
+suppressMessages(suppressWarnings({
+  library(targets)
+  library(tidymodels)
+  library(tidyverse)
+  library(discrim)
+}))
+
+library(targets)
+library(tidyverse)
+library(tidymodels)
+library(discrim)
+library(ggplot2)
+
 ```
 
-<br>
-
-------------------------------------------------------------------------
 
 ## Introduction
 
-This document will walk you through establishing reproducible workflows using the `targets` package in R.
-You will learn how to create a pipeline to manage data processing efficiently and compare the outcomes with and without `targets`. 
-We will use the built-in `iris` dataset to demonstrate these workflows.
+This document provides a step-by-step guide to establishing reproducible workflows using the `targets` package in R. By following this tutorial, you'll learn how to efficiently manage data processing with pipelines and compare the outcomes of analyses conducted with and without targets.
 
-<div class="comment">
+We will use the built-in `iris` dataset as a demonstration.
+
 ### Why Use Pipelines?
-Pipelines help automate workflows by caching intermediate steps and only rerunning parts of the analysis that have changed.
-</div>
 
-```{r}
-# Install targets if not already installed
-library(targets)
-library(tidyverse)
-library(ggplot2)
-
-tar_option_set(packages = c("dplyr", "ggplot2"))
-```
-
-<br>
-
-------------------------------------------------------------------------
+Pipelines allow you to automate your workflow by caching intermediate results and rerunning only the parts of the analysis that have changed. This makes your workflow more efficient, reproducible, and scalable.
 
 ## Defining a Simple Pipeline
 
-We'll create a simple pipeline to read the `iris` dataset, filter it for one species (`setosa`), calculate summary statistics, and generate a plot.
+We'll create a pipeline to explore the variables of the `iris` dataset, and create a classification model that predicts the species based on all the other variables.
 
-<div class="comment">
 ### Pipeline Setup (`_targets.R`)
-</div>
 
-```{r}
+To build our setup, we will use the function `use_targets()`. This automatically creates a template `_targets.R` file that we can use to introduce our functions into the whole workflow.
+
+```{r eval=FALSE}
 use_targets()
-# tar_script({
-#   tar_pipeline(
-#     tar_target(raw_data, iris),
-#     tar_target(setosa_data, raw_data %>% filter(Species == "setosa")),
-#     tar_target(summary_stats, setosa_data %>% summarize(mean_Sepal.Length = mean(Sepal.Length))),
-#     tar_target(plot, ggplot(setosa_data, aes(x = Sepal.Length)) + geom_histogram())
-#   )
-# })
 ```
 
-<br>
+As a next step, we will create a `functions.R` file in the sub-folder `R` that contains all the functions we use:
 
-------------------------------------------------------------------------
+-   for descriptive statistics: `summary_statistics()` and `plot_histogram()`
+-   training and fitting the model: `split_train_test_data()`, `build_and_fit_model()`
+-   using the model to predict new observations and evaluate: `predict_model_fit()` and `model_evaluate_metrics()`.
+
+```{r load-code}
+raw_code <- readLines("./R/functions.R")
+
+cat(paste(raw_code, collapse = "\n"))
+```
+
+Now that we have all our functions that make the pipeline work defined, we only need to include them in the `_targets.R` file! The file has the following structure:
+
+```{r, eval= FALSE}
+library(targets)
+
+# Set target options:
+tar_option_set(
+  packages = c("tibble")
+)
+
+tar_source()
+
+list(
+  tar_target(
+    name = data,
+    command = tibble(x = rnorm(100), y = rnorm(100))
+  ),
+  tar_target(
+    name = model,
+    command = coefficients(lm(y ~ x, data = data))
+  )
+)
+```
+
+The **key components** of this structure are the following:
+
+-   `library(targets)` initializes the package
+-   `tar_options_set()` defines global options for the pipeline, such as the required packages (in this case, `tibble`).
+-   `tar_source()` automatically loads the R functions defined in the `R/functions.R` file, keeping your pipeline modular and organized.
+-   a `list()` that contains a series of `tar_target()` functions, where:
+    -   `name`: Specifies the name of the object generated at this step.
+    -   `command`: Contains the code or function that will be executed to generate the corresponding target.
+
+In this example, the pipeline creates:
+
+-   A `data` target containing a tibble of random values.
+-   A `model` target storing the coefficients of a linear regression model based on data.
+
+Each `tar_target()` represents a step in the pipeline, ensuring that these steps are only recomputed when necessary.
+
+We will modify the content of the template according to our functions.
+
+```{r}
+raw_targets_code <- readLines("_targets.R")
+
+cat(paste(raw_targets_code, collapse = "\n"))
+```
+
+Can you identify what each step does?
 
 ## Running the Pipeline
 
-Once your pipeline is defined in `_targets.R`, you can run it using the following command:
+Once your pipeline is fully defined in `_targets.R`, you can run it using the following command:
 
-```{r}
+```{r message=FALSE, warning=FALSE}
 tar_make()
 ```
 
-------------------------------------------------------------------------
+Did this work? Let's check with the function `tar_manifest()`, lists verbose[^1] information about each target.
+
+[^1]: In programming, if a function or tool runs in "verbose mode," it provides detailed output about what it's doing, often including steps, statuses, and any underlying operations. This is helpful for understanding the process or diagnosing issues.
+
+```{r message=FALSE, warning=FALSE}
+tar_manifest(fields = all_of("command"))
+```
+
+## Visualizing the Pipeline
+
+You can visualize the dependency graph of your pipeline with `tar_visnetwork()`.
+
+```{r message=FALSE, warning=FALSE}
+tar_visnetwork()
+```
 
 ## Viewing Results
+
+We can access the results of any target using `tar_read()`. For example, if we want to take a look into the exploratory part:
+
+```{r}
+tar_read(histogram)
+```
+
+How did the model perform? Let's check the evaluation metrics.
+
+```{r}
+tar_read(evaluation_metrics)
+```
+
+Note that this target contains two outputs! The confusion matrix and overall metrics of accuracy and KAP. We can select items of any target subsetting by index. 
+
+```{r}
+tar_read(evaluation_metrics)[[2]]
+```
+We could even perform operations of code on our targets without adding them to the pipeline by selecting them. For example, if we wanted to format our confusion matrix as a plot we could do the following. 
 
 You can access the results of any target using `tar_read()`.
 
 ```{r}
-# Read the summary statistics
-tar_read(evaluation_metrics)
-
-# View the plot
-tar_read(histogram)
-
-as_tibble(tar_read(evaluation_metrics)$conf_matrix$table) %>%
+as_tibble(tar_read(evaluation_metrics)[[2]]$table) %>%
   ggplot(aes(x = Prediction, y = Truth, fill = n)) +
   geom_tile() +
   geom_text(aes(label = n), color = "white", size = 5) +
@@ -112,10 +176,8 @@ as_tibble(tar_read(evaluation_metrics)$conf_matrix$table) %>%
 
 
 ```
+This revised version improves readability, adds clarity, and ensures a smooth flow throughout the document. It also emphasizes key steps, making it easier to follow for someone new to using the `targets` package.
 
-<br>
-
-------------------------------------------------------------------------
 
 ## Comparing Outcomes: With and Without `targets`
 
@@ -123,33 +185,67 @@ Let's compare how the workflow looks with and without using the `targets` packag
 
 ### Without `targets`:
 
-```{r}
-# Load and clean data
-raw_data <- iris
-setosa_data <- raw_data %>% filter(Species == "setosa")
+When operating without the `targets` package, we typically execute all steps sequentially in a more linear fashion. Below is an example of how we would do our previous `iris` pipeline:
 
-# Calculate summary stats
-summary_stats <- setosa_data %>% summarize(mean_Sepal.Length = mean(Sepal.Length))
-
-# Generate plot
-plot <- ggplot(setosa_data, aes(x = Sepal.Length)) + geom_histogram()
-
-# View results
-summary_stats
-plot
-```
-
-## Visualizing the Pipeline
-
-You can visualize the dependency graph of your pipeline with `tar_visnetwork()`.
 
 ```{r}
-tar_visnetwork()
+data <- iris
+
+data_long <- data %>%
+  pivot_longer(cols = -Species, names_to = "Variable", values_to = "Value")
+  
+ggplot(data_long, aes(x = Value, fill = Species)) +
+    geom_histogram(bins = 30, position = "identity", alpha = 0.7, color = "black") +
+    facet_wrap(~ Variable, scales = "free") +
+    labs(title = "Histograms of Iris Dataset Variables Colored by Species",
+         x = "Value",
+         y = "Count") +
+    theme_minimal() +
+    theme(legend.position = "top")
+
+set.seed(123) 
+
+split <- initial_split(data, prop = 0.8, strata = Species)
+data_train <- training(split)
+data_test  <- testing(split)
+
+
+model <-  naive_Bayes() %>%
+  set_engine("naivebayes") %>%
+  set_mode("classification")
+  
+recipe <- recipe(Species ~ ., data = data_train)
+  
+workflow <- workflow() %>%
+  add_model(model) %>%
+  add_recipe(recipe)
+  
+fit <- workflow %>%
+  fit(data = data_train)
+
+
+model_predictions <- predict(fit, data_test) %>%
+    bind_cols(data_test)
+
+metrics <- model_predictions %>%
+    metrics(truth = Species, estimate = .pred_class)
+  
+conf_mat <- model_predictions %>%
+    conf_mat(truth = Species, estimate = .pred_class)
+
 ```
 
+- This approach requires executing each step in sequence, making it harder to manage intermediate results. As a result, any changes in the analysis (e.g., modifying the model or data processing steps) necessitate re-running the entire workflow.
 
-------------------------------------------------------------------------
+- Without `targets`, it’s easy to lose track of which analyses have been executed or to overlook necessary updates to intermediate steps. This can lead to inconsistencies and longer execution times.
+
+In contrast, using the `targets` package allows us to modularize our workflow, cache results, and focus only on the components that have changed, significantly enhancing efficiency and reproducibility.
 
 ## Conclusion
 
-In this tutorial, we created a simple reproducible workflow using the `targets` package in R. By using `targets`, you can automate and manage complex analyses, improving both efficiency and reproducibility.
+We demonstrated how to define a simple pipeline utilizing the `iris` dataset, encompassing essential steps from data preparation to model evaluation. Key components of the pipeline included the creation of `targets`, modular function organization, and visualization of the workflow, which together contribute to an efficient data science process.
+
+Using `tar_make()`, we were able to execute our pipeline, ensuring that computations were only performed when necessary. Furthermore, by leveraging functions like `tar_read()` and `tar_visnetwork()`, we accessed our results easily and visualized the dependencies within our workflow, aiding in better understanding and communication of our analysis.
+
+In summary, the `targets` package equips us with powerful tools to build scalable, reproducible data workflows in R, making it an invaluable asset for data scientists and analysts. We encourage you to experiment with your own datasets and analyses, utilizing these concepts to foster reproducibility and efficiency in your work.
+

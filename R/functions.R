@@ -26,9 +26,6 @@ plot_histogram <- function(data){
   
 }
 
-#     tar_target(summary_stats, setosa_data %>% summarize(mean_Sepal.Length = mean(Sepal.Length))),
-#     tar_target(plot, ggplot(setosa_data, aes(x = Sepal.Length)) + geom_histogram()
-
 split_train_test_data <- function(data){
   
   set.seed(123) 
@@ -68,11 +65,9 @@ predict_model_fit <- function(model_fit, data_test){
 }
 
 model_eval_metrics <- function(model_predictions){
-  # Evaluate the model performance
   metrics <- model_predictions %>%
     metrics(truth = Species, estimate = .pred_class)
   
-  # Generate a confusion matrix to see detailed performance
   conf_mat <- model_predictions %>%
     conf_mat(truth = Species, estimate = .pred_class)
   
