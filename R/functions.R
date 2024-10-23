@@ -3,8 +3,8 @@ library(tidyverse)
 library(discrim)
 
 summary_statistics <- function(data){
-  summary_data <- data %>% 
-    group_by(Species) %>% 
+  summary_data <- data %>%
+    group_by(Species) %>%
     summarise_all(mean)
   
   return(summary_data)
