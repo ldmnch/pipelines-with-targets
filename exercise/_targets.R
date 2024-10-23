@@ -24,7 +24,7 @@ list(
   ),
   tar_target(
     name = summary,
-    command = ##Insert here: What would you need to write here to add the relevant function from functions.R that summarises data?
+    command = ##Insert here: What would you need to write here to add the relevant function from `functions.R` that summarises data?
   ),
   tar_target(
     name = histogram,
