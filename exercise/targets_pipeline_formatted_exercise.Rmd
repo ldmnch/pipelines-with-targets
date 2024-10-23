@@ -1,0 +1,116 @@
+
+---
+title: "Establishing Pipelines with targets in R"
+author: "Group E"
+date: "`r format(Sys.time(), '%B %d, %Y | %H:%M:%S | %Z')`"
+output:
+  html_document:
+    code_folding: show
+    df_print: paged
+    highlight: tango
+    number_sections: no
+    theme: cosmo
+    toc: no
+---
+
+<style>
+div.answer {background-color:#f3f0ff; border-radius: 5px; padding: 20px;}
+div.comment {background-color:#F0F6FF; border-radius: 5px; padding: 20px;}
+</style>
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,
+                      eval = TRUE,
+                      error = FALSE,
+                      message = FALSE,
+                      warning = FALSE,
+                      comment = NA)
+
+"#f3f0ff"
+```
+
+<br>
+
+------------------------------------------------------------------------
+
+## Introduction
+
+This exercise will walk you through establishing reproducible workflows using the `targets` package in R.
+You will learn:
+1) How to create a pipeline to manage data processing efficiently
+2) The key functions in the targets package
+3) The importance of file and folder structure
+We will use the built-in `iris` dataset to demonstrate these workflows.
+
+<div class="comment">
+### Why Use Pipelines?
+Pipelines help automate workflows by caching intermediate steps and only rerunning parts of the analysis that have changed.
+</div>
+
+```{r}
+# Install targets if not already installed
+library(targets)
+library(tidyverse)
+library(ggplot2)
+
+tar_option_set(packages = c("dplyr", "ggplot2"))
+```
+
+<br>
+
+------------------------------------------------------------------------
+
+## Defining a Simple Pipeline
+
+We'll create a simple pipeline to read the `iris` dataset, filter it for one species (`setosa`), calculate summary statistics, and generate a plot.
+
+<div class="comment">
+### Pipeline Setup (`_targets.R`)
+</div>
+
+```{r}
+use_targets()
+```
+
+<br>
+
+------------------------------------------------------------------------
+
+## Running the Pipeline
+
+Once your pipeline is defined in `_targets.R`, you can run it using the following command:
+
+```{r}
+tar_make()
+```
+
+------------------------------------------------------------------------
+
+## Viewing Results
+
+You can access the results of any target using `tar_read()`.
+
+```{r}
+# Read the summary statistics
+tar_read(summary)
+
+# View the plot: What would you need to write inside this function to see the plot?
+tar_read(##Insert here)
+
+```
+
+<br>
+
+## Visualizing the Pipeline
+
+You can visualize the dependency graph of your pipeline with `tar_visnetwork()`.
+
+```{r}
+tar_visnetwork()
+```
+
+------------------------------------------------------------------------
+
+## Conclusion
+
+In this tutorial, we created a simple reproducible workflow using the `targets` package in R. By using `targets`, you can automate and manage complex analyses, improving both efficiency and reproducibility.
